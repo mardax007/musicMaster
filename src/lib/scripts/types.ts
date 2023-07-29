@@ -22,6 +22,7 @@ class Song {
     name: string;
     instruments: Instrument[] = [];
     uid: string;
+    creationDate = new Date();
     constructor(name: string) {
         this.name = name;
         this.uid = generateUID();
@@ -43,11 +44,21 @@ class Song {
             this.instruments.push({
                 name: mainName,
                 count: 1,
-                uid: ""
+                uid: generateUID()
             });
         }
 
         return this.instruments;
+    }
+
+    // export for firebase
+    export() {
+        return {
+            name: this.name,
+            instruments: this.instruments,
+            uid: this.uid,
+            creationDate: this.creationDate.toISOString()
+        };
     }
 }
 

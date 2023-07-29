@@ -1,7 +1,7 @@
 import { addDoc, collection, deleteDoc, doc, getFirestore, onSnapshot, setDoc, updateDoc } from "firebase/firestore";
 import { generateUID, importSong } from "./util";
 import { projectID, projects, songs, existingInstruments, players, userInfo } from "./stores";
-import type { ExistingInstrument, Instrument } from "./types";
+import type { ExistingInstrument, Instrument, Song } from "./types";
 import { GoogleAuthProvider, getAuth, onAuthStateChanged, signInWithPopup } from "firebase/auth";
 import { initializeApp } from "firebase/app";
 
@@ -21,7 +21,7 @@ const db = getFirestore(app);
 
 let $existingInstruments = [] as ExistingInstrument[];
 let $projectID = "";
-let $songs = [] as any;
+let $songs = [] as Song[];
 let $players = [] as any;
 let $userInfo = {} as any;
 
@@ -58,8 +58,14 @@ function openProject(_projectID: string) {
         if (data.songs) data.songs.forEach(songs => {
             tempSongs.push(importSong(songs));
         });
-        
-        songs.set(data.songs || []);
+
+        tempSongs.sort((a, b) => {
+            if (a.creationDate > b.creationDate) return 1;
+            if (a.creationDate < b.creationDate) return -1;
+            return 0;
+        });
+
+        songs.set(tempSongs);
         existingInstruments.set(data.existingInstruments || []);
         players.set(data.players || []);
 
@@ -68,7 +74,7 @@ function openProject(_projectID: string) {
 }
 
 function cleanupSongs() {
-    $songs.forEach(song => {
+    $songs.forEach((song: Song) => {
         for (let i = 0; i < song.instruments.length; i++) {
             const instrument = song.instruments[i];
             const existingInstrument = $existingInstruments.find((i) => i.names.includes(instrument.name));
@@ -121,27 +127,23 @@ function deleteProject(uid: string, projects: any) {
     });
 }
 
-function saveSong(song: any) {
+function saveSong(song: Song) {
     const projectRef = doc(db, `projects/${$projectID}/`);
-    
-    const temp = $songs.filter((s) => s.uid !== song.uid);
+
+    const temp: Song[] = $songs.filter((s) => s.uid !== song.uid);
+    temp.push(song);
 
     updateDoc(projectRef, {
-        songs: [
-            ...temp,
-            {
-                name: song.name,
-                instruments: song.instruments,
-                uid: song.uid
-            }
-        ]
+        songs: temp.map((s: Song) => (s.export()))
     });
 }
 
 function deleteSong(uid: string) {
     const projectRef = doc(db, `projects/${$projectID}`);
+
+    const data = $songs.map((s) => (s.export()));
     updateDoc(projectRef, {
-        songs: $songs.filter((s) => s.uid !== uid)
+        songs: data.filter((s) => s.uid !== uid)
     });
 }
 
@@ -159,6 +161,8 @@ function combineInstruments(mainName: string, names: string[]) {
                 uid: generateUID()
             }
         ]
+    }).then(() => {
+        cleanupSongs();
     });
 }
 
@@ -188,6 +192,8 @@ function deleteInstrument(id: string) {
 
     updateDoc(instrumentRef, {
         existingInstruments: $existingInstruments.filter((i) => i.uid !== id)
+    }).then(() => {
+        cleanupSongs();
     });
 }
 
@@ -209,8 +215,10 @@ onAuthStateChanged(auth, async (user) => {
                     }
                 });
             } else {
-                projects.set(doc.data()?.projects || []);
+                const projectsData = doc.data()?.projects || [];
                 const userData = doc.data()?.info || {};
+
+                projects.set(projectsData);
                 userData.id = user.uid;
                 userInfo.set(userData);
             }

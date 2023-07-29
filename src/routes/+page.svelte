@@ -61,6 +61,9 @@
     {:else if $userInfo.id}
         {#if $newSong}
             <h1>{$newSong.name}</h1>
+            <button on:click={() => {
+                console.log($instruments)
+            }}>Run</button>
             <form on:submit={addInstrument}>
                 <h2>Instruments</h2>
                 {#each $instruments as instrument}
@@ -105,17 +108,19 @@
             }}>Save</button>
         {:else}
             <h1>Songs</h1>
-            {#each $songs as song}
-                <input type="checkbox">{song.name}
-                <button on:click={() => {
-                    newSong.set(importSong(song));
-                    $instruments = song.instruments;
-                }}>Edit</button>
-                <button on:click={() => {
-                    deleteSong(song.uid);
-                }}>Delete</button>
-                <br>
-            {/each}
+            <div id="songList">
+                {#each $songs as song}
+                    <input type="checkbox" value={song.uid}>{song.name}
+                    <button on:click={() => {
+                        newSong.set(importSong(song));
+                        $instruments = song.instruments;
+                    }}>Edit</button>
+                    <button on:click={() => {
+                        deleteSong(song.uid);
+                    }}>Delete</button>
+                    <br>
+                {/each}
+            </div>
             <br>
             <form on:submit={(e) => {
                 e.preventDefault();
@@ -149,7 +154,7 @@
                 const mainName = prompt("Main name");
                 if (!mainName) return;
 
-                const checkboxes = document.querySelectorAll('#instrumentList input[type="checkbox"]');
+                const checkboxes = document.querySelectorAll('#instrumentList input[type="checkbox"]:checked');
                 const ids = Array.from(checkboxes).map((checkbox) => checkbox.value);
                 const names = ids.map((id) => $existingInstrumentsWriteable.find((i) => i.uid === id)?.mainName || "");
                 const otherNames = ids.map((id) => $existingInstrumentsWriteable.find((i) => i.uid === id)?.names || []).flat();
@@ -167,13 +172,16 @@
                 });
             }}>Combine</button>
             <h1>Players</h1>
-            {#each $players as player}
-                {player.name}
-                <button on:click={() => {
-                    deletePlayer(player.uid);
-                }}>Delete</button>
-                <br>
-            {/each}
+            <div id="playerList">
+                {#each $players as player}
+                    <input type="checkbox" value={player.uid}>
+                    {player.name}
+                    <button on:click={() => {
+                        deletePlayer(player.uid);
+                    }}>Delete</button>
+                    <br>
+                {/each}
+            </div>
             <br>
             <form on:submit={(e) => {
                 e.preventDefault();
@@ -191,6 +199,29 @@
                 <br>
                 <button type="submit">Create</button>
             </form>
+
+            <h1>Concert plan</h1>
+            
+
+            <button on:click={() => {
+                const songCheckboxes = document.querySelectorAll('#songList input[type="checkbox"]:checked');
+                const songIds = Array.from(songCheckboxes).map((checkbox) => checkbox.value);
+                const selectedSongs = songIds.map((id) => $songs.find((i) => i.uid === id));
+
+                const playerCheckboxes = document.querySelectorAll('#playerList input[type="checkbox"]:checked');
+                const playerIds = Array.from(playerCheckboxes).map((checkbox) => checkbox.value);
+                const playersSelected = playerIds.map((id) => $players.find((i) => i.uid === id));
+
+                console.log(playerIds);
+                const usedInstruments = new Set();
+                selectedSongs.forEach(song => {
+                    song?.instruments.forEach(instrument => {
+                        if (playerIds.includes(instrument.playerID)) usedInstruments.add(instrument.name);
+                    });
+                })
+
+                console.log(usedInstruments);
+            }}>Plan</button>
         {/if}
     {/if}
 </div>

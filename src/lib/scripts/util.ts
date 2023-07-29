@@ -8,6 +8,7 @@ function importSong(data: Song) {
     const song = new Song(data.name);
     song.uid = data.uid;
     song.instruments = data.instruments;
+    song.creationDate = new Date(data.creationDate);
 
     return song;
 }
