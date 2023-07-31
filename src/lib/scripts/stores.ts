@@ -9,5 +9,6 @@ const projectID = writable<string>("");
 const projects = writable<any[]>([]);
 const players = writable<any[]>([]);
 const userInfo = writable<any>({});
+const invites = writable<any[]>([]);
 
-export { existingInstruments, songs, newSong, instruments, projectID, userInfo, projects, players };
+export { existingInstruments, songs, newSong, instruments, projectID, userInfo, projects, players, invites };

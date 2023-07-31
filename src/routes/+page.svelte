@@ -1,8 +1,9 @@
 <script lang="ts">
 	import { Song } from "$lib/scripts/types";
-    import { existingInstruments as existingInstrumentsWriteable, newSong, songs, projectID, projects, players, instruments, userInfo } from "$lib/scripts/stores";
+    import { existingInstruments as existingInstrumentsWriteable, newSong, songs, projectID, projects, players, instruments, userInfo, invites } from "$lib/scripts/stores";
 	import { importSong } from "$lib/scripts/util";
-	import { combineInstruments, createNewProject, createPlayer, deleteInstrument, deletePlayer, deleteProject, deleteSong, openProject, saveSong, signInWithGoogle } from "$lib/scripts/databaseControl";
+	import { acceptInvite, combineInstruments, createNewProject, createPlayer, deleteInstrument, deletePlayer, deleteSong, inviteUser, leaveProject, openProject, saveSong, signInWithGoogle } from "$lib/scripts/databaseControl";
+	import { getAuth, signOut } from "firebase/auth";
 
     let selectedInstrument: string = "new";
 
@@ -31,6 +32,9 @@
 
 <div>
     <button on:click={signInWithGoogle}>Sign in with Google</button>
+    <button on:click={() => {
+        signOut(getAuth());
+    }}>Sign out</button>
     {#if $userInfo.id && $projectID}
         <button on:click={() => {
             openProject("");
@@ -47,12 +51,24 @@
                         openProject(project.uid);
                     }}>Open</button>
                     <button on:click={() => {
-                        deleteProject(project.uid, $projects);
-                    }}>Delete</button>
+                        leaveProject(project.uid);
+                    }}>Leave</button>
                 </li>
             {/each}
         </ul>
         <br>
+        <h1>Invites</h1>
+        <ul>
+            {#each $invites as invite}
+                <li>
+                    {invite.name}
+                    <button on:click={() => {
+                        acceptInvite(invite);
+                        openProject(invite.uid);
+                    }}>Accept</button>
+                </li>
+            {/each}
+        </ul>
         <br>
         <button on:click={async () => {
             const name = prompt("Project name") || "";
@@ -68,10 +84,14 @@
                 <h2>Instruments</h2>
                 {#each $instruments as instrument}
                     <p>{instrument.name} - {instrument.count}x
-                        <select bind:value={instrument.playerID}>
+                        <select value={$players.find((i) => i.uid === instrument.playerID) ? instrument.playerID : ""} on:change={(e) => {
+                            instrument.playerID = e?.target?.value;
+                        }}>
                             <option value="">none</option>
                             {#each $players as i}
-                                <option value={i.uid}>{i.name}</option>
+                                {#if i.name != ""}
+                                    <option value={i.uid}>{i.name}</option>
+                                {/if}
                             {/each}
                         </select>
                     </p>
@@ -196,9 +216,28 @@
                 else createPlayer(data.name.toString());
             }}>
                 <input type="text" name="name" id="name" placeholder="Name" />
-                <br>
                 <button type="submit">Create</button>
             </form>
+
+            <br>
+            <br>
+            <form on:submit={(e) => {
+                e.preventDefault();
+
+                const form = e.target;
+                if (!form) return;
+
+                const formData = new FormData(form);
+                const data = Object.fromEntries(formData.entries());
+
+                if (!data.email) return alert('Email is required');
+                else inviteUser(data.email.toString());
+            }}>
+                <input type="text" name="email" id="email" placeholder="Email" />
+                <br>
+                <button type="submit">Add</button>
+            </form>
+
 
             <h1>Concert plan</h1>
             
