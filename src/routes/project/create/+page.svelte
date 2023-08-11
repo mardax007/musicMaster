@@ -1,8 +1,6 @@
 <script lang="ts">
 	import { createNewProject } from "$lib/scripts/projectManager";
 	import { user } from "$lib/scripts/stores";
-
-
 </script>
 
 <form on:submit={(e) => {
@@ -11,7 +9,7 @@
     const form = e.target;
     const formData = new FormData(form);
     const data = Object.fromEntries(formData.entries());
-    
+
     createNewProject({
         name: data.name.toString(),
         description: data.description.toString()

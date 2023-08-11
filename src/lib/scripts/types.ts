@@ -1,5 +1,9 @@
 type UserData = {
-    projects: Project[];
+    projects: string[];
+    invites: {
+        id: string;
+        from: string;
+    }[];
 }
 
 type Project = {
@@ -7,7 +11,7 @@ type Project = {
     name: string;
     description: string;
     createdAt: number;
-    createdBy: string;
+    owner: string;
     collaborators: string[];
     songs: Song[];
     knownInstruments: Instrument[];
@@ -17,18 +21,26 @@ type Song = {
     id: string;
     name: string;
     createdAt: number;
-    createdBy: string;
-    instruments: Instrument[];
+    instruments: InstrumentUsed[];
 }
 
 type Instrument = {
     name: string;
-    types: string[];
+    subnames: string[];
+    id: string;
+}
+
+type InstrumentUsed = {
+    name: string;
+    playedBy: string;
+    count: number;
+    id: string;
 }
 
 type Collaborator = {
     displayName: string;
     photoURL: string;
+    id: string;
 }
 
-export type { Collaborator, UserData, Project, Song, Instrument };
+export type { Collaborator, UserData, Project, Song, Instrument, InstrumentUsed };

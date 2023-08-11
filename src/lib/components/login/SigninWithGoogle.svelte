@@ -1,10 +1,8 @@
 <script lang="ts">
-    function handleClick() {
-        console.log("Sign in with Google clicked");
-    }
+	import { signInWithGoogle } from "$lib/scripts/authentication";
 </script>
 
-<button class="btn btn-primary" on:click={handleClick}>
+<button class="btn btn-primary" on:click={signInWithGoogle}>
   <img alt="Google logo" src="https://img.icons8.com/color/48/000000/google-logo.png" />
   <span>Sign in with Google</span>
 </button>

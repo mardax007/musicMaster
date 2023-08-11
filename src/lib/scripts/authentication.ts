@@ -1,6 +1,5 @@
-import { GoogleAuthProvider, signInWithPopup, getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, onAuthStateChanged, updateProfile } from "firebase/auth";
+import { GoogleAuthProvider, signInWithPopup, getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword } from "firebase/auth";
 import { initializeApp } from "firebase/app";
-import { doc, getFirestore, setDoc } from "firebase/firestore";
 
 const firebaseConfig = {
     apiKey: "AIzaSyAmlbDSoq_tJABuJbqxv3zEYh8P7eEUy5g",
@@ -16,12 +15,11 @@ const app = initializeApp(firebaseConfig);
 
 const provider = new GoogleAuthProvider();
 const auth = getAuth(app);
-const db = getFirestore();
 
 const signInWithGoogle = () => signInWithPopup(auth, provider);
 const signinWithEmailAndPass = async (email: string, password: string) => {
     try {
-        await signInWithEmailAndPassword(auth, email, password)
+        await signInWithEmailAndPassword(auth, email, password);
     } catch (error) {
         switch (error.message) {
             case 'Firebase: Error (auth/user-not-found).':
@@ -35,11 +33,11 @@ const signinWithEmailAndPass = async (email: string, password: string) => {
                 break;
         }
     }
-}
+};
 
 const signupWithEmailAndPass = async (email: string, password: string) => {
     try {
-        await createUserWithEmailAndPassword(auth, email, password)
+        await createUserWithEmailAndPassword(auth, email, password);
     } catch (error) {
         switch (error.message) {
             case 'Firebase: Error (auth/email-already-in-use).':
@@ -53,6 +51,6 @@ const signupWithEmailAndPass = async (email: string, password: string) => {
                 break;
         }
     }
-}
+};
 
-export { app, auth, signInWithGoogle, signinWithEmailAndPass, signupWithEmailAndPass }
+export { app, auth, signInWithGoogle, signinWithEmailAndPass, signupWithEmailAndPass };

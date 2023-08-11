@@ -4,7 +4,7 @@
 
     async function handleSignin(e) {
         e.preventDefault();
-        
+
         const form = Object.fromEntries(new FormData(e.target).entries());
 
         await signinWithEmailAndPass(form.email.toString(), form.password.toString())
@@ -12,7 +12,7 @@
 
     async function handleSignup(e) {
         e.preventDefault();
-        
+
         const form = Object.fromEntries(new FormData(e.target).entries());
 
         await signupWithEmailAndPass(form.email.toString(), form.password.toString())
